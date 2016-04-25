@@ -1,0 +1,180 @@
+## Civic Issue Tracker Schema
+
+type User implements Node @rootViewer(field: "viewer") {
+  id: ID!                    # id field is required by Node interface
+  firstName: String
+  lastName: String
+  emails: [String]!
+  profilePictureUrl: String
+
+  issues: NodeConnection(Issue, user)
+  comments: NodeConnection(Comment, user)
+  likes: NodeConnection(Issue, likes, Like)
+}
+
+type Issue implements Node @rootConnection(field: "allIssues") {
+  id: ID!
+  category: IssueCategory!
+  headline: String!
+  description: String
+  # replace with Point once Point type is incorporated into Meldio
+  location: [Float!] # [0] lat / [1] lon
+  photoUrl: String
+
+  status: IssueStatus!
+  timestamp: String!
+  closedTimestamp: String
+
+  user: NodeConnection(User, issues)
+  city: NodeConnection(City, issues)
+  agencies: NodeConnection(Agency, issues, Tag)
+
+  comments: NodeConnection(Comment, issue)
+  likes: NodeConnection(User, likes, Like)
+}
+
+type City implements Node {
+  id: ID!
+  displayName: String!
+  internalName: String! @rootPluralId(field: "cityByName")
+  # replace with Polygon once Polygon type is incorporated into Meldio
+  boundary: [Float!] # pairs of lat / lon
+  issues: NodeConnection(Issue, city)
+}
+
+type Agency implements Node {
+  id: ID!
+  name: String!
+  description: String
+  issues: NodeConnection(Issue, agencies, Tag)
+}
+
+type Comment implements Node {
+  id: ID!
+  text: String
+  documentUrls: [String]
+  photoUrls: [String]
+  timestamp: String!
+  editedTimestamp: String
+  issue: NodeConnection(Issue, comments)
+  user: NodeConnection(User, comments)
+}
+
+type Tag {
+  timestamp: String!
+  user: User
+}
+
+type Like {
+  timestamp: String!
+}
+
+mutation addIssue(
+  category: IssueCategory!
+  headline: String!
+  description: String
+  location: [Float!] # [0] lat / [1] lon
+  photoUrl: String
+) {
+  issueEdge: Edge(Issue)
+  viewer: User
+}
+
+mutation editIssue(
+  id: ID!
+  headline: String!
+  description: String
+  photoUrl: String
+) {
+  issue: Issue
+}
+
+mutation closeIssue(id: ID!) {
+  issue: Issue
+}
+
+mutation addComment(
+  issueId: ID!
+  text: String
+  documentUrls: [String]
+  photoUrls: [String]
+) {
+  commentEdge: Edge(Comment)
+  issue: Issue
+}
+
+mutation editComment(
+  id: ID!
+  text: String
+  documentUrls: [String]
+  photoUrls: [String]
+) {
+  comment: Comment
+}
+
+mutation deleteComment(
+  id: ID!
+) {
+  deletedCommentId: ID
+  issue: Issue
+}
+
+mutation like(
+  issueId: ID!
+) {
+  likeEdge: Edge(User)
+  issue: Issue
+}
+
+mutation unlike(
+  issueId: ID!
+) {
+  deletedLikeUserId: ID
+  issue: Issue
+}
+
+mutation tagAgency(
+  issueId: ID!
+  agencyId: ID!
+) {
+  agencyEdge: Edge(Agency, Tag)
+  issue: Issue
+}
+
+mutation untagAgency(
+  issueId: ID!
+  agencyId: ID!
+) {
+  untaggedAgencyId: ID
+  issue: Issue
+}
+
+enum IssueCategory {
+  CAR_ACCIDENT
+  HEAVY_TRAFFIC
+  ROAD_HAZARD
+  RECKLESS_DRIVING
+  MISSING_TRAFFIC_SIGN
+  DAMAGED_PAVEMENT
+  DANGEROUS_HOLE
+  MISSING_MANHOLE_COVER
+  GARBAGE
+  ILLEGAL_CONSTRUCTION
+  FLOODING
+  LANDSLIDE
+  FIRE
+  ANIMAL_ABUSE
+  LACK_OF_ACCESSIBILITY
+  EXCESSIVE_ADVERTISING
+  BRANCHES_AND_FALLEN_TREES
+  DAMAGED_OR_MISSING_LIGHTING
+  EXCESSIVE_POLLUTION
+  EXCESSIVE_NOISE
+  ILLEGAL_PARKING
+  DANGER_ZONE
+}
+
+enum IssueStatus {
+  OPEN
+  CLOSED
+}

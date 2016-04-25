@@ -1,0 +1,40 @@
+{
+  "name": "civic-issue-tracker",
+  "version": "0.0.1",
+  "description": "Civic issue tracker demo backend",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meldio/civic-issue-tracker.git"
+  },
+  "license": "MIT",
+  "config": {
+    "meldio": {
+      "dbConnectionUri": "mongodb://localhost:27017/civic-issue-tracker",
+      "protocol": "http",
+      "host": "localhost",
+      "port": 9000,
+      "enabledAuth": [
+        "facebook",
+        "google"
+      ],
+      "sessionDurationUnit": "days",
+      "sessionDuration": "30",
+      "scopes": {
+        "facebook": [
+          "public_profile",
+          "email"
+        ],
+        "google": [
+          "https://www.googleapis.com/auth/userinfo.profile",
+          "https://www.googleapis.com/auth/userinfo.email"
+        ]
+      },
+      "root": "",
+      "schema": "schema.sdl",
+      "permissions": "permissions.js",
+      "mutations": "mutations",
+      "hooks": "hooks",
+      "build": ".build"
+    }
+  }
+}
